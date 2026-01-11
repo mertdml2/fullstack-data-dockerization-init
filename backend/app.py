@@ -46,7 +46,7 @@ def get_messages():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "SELECT id, content, created_at FROM messages " 
+        "SELECT id, content, created_at FROM messages "
         "ORDER BY created_at DESC;")
     rows = cur.fetchall()
     cur.close()
@@ -69,7 +69,7 @@ def post_message():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO messages (content) VALUES (%s) RETURNING id;", 
+        "INSERT INTO messages (content) VALUES (%s) RETURNING id;",
         (content,))
     new_id = cur.fetchone()[0]
     conn.commit()
