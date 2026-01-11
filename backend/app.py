@@ -13,8 +13,10 @@ db_config = {
     "password": os.getenv("POSTGRES_PASSWORD", "dev")
 }
 
+
 def get_connection():
     return psycopg2.connect(**db_config)
+
 
 def init_db():
     conn = get_connection()
@@ -30,17 +32,22 @@ def init_db():
     cur.close()
     conn.close()
 
+
 init_db()
+
 
 @app.route("/health", methods=["GET"])
 def health_check():
     return {"status": "ok"}
 
+
 @app.route("/messages", methods=["GET"])
 def get_messages():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, content, created_at FROM messages ORDER BY created_at DESC;")
+    cur.execute(
+        "SELECT id, content, created_at FROM messages " 
+        "ORDER BY created_at DESC;")
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -49,6 +56,7 @@ def get_messages():
         for row in rows
     ]
     return jsonify(messages)
+
 
 @app.route("/messages", methods=["POST"])
 def post_message():
@@ -60,13 +68,16 @@ def post_message():
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("INSERT INTO messages (content) VALUES (%s) RETURNING id;", (content,))
+    cur.execute(
+        "INSERT INTO messages (content) VALUES (%s) RETURNING id;", 
+        (content,))
     new_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
     conn.close()
 
     return jsonify({"message": "Message added", "id": new_id}), 201
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
