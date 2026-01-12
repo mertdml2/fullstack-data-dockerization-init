@@ -2,9 +2,9 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test_backend:
@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:15
         ports:
-        - 5432:5432
+          - 5432:5432
         env:
           POSTGRES_USER: dev
           POSTGRES_PASSWORD: dev
@@ -29,42 +29,44 @@ jobs:
       DB_HOST: localhost
 
     steps:
-    - name: Checkout du code
-      uses: actions/checkout@v4
+      - name: Checkout du code
+        uses: actions/checkout@v4
 
-    - name: Installer Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Installer les dépendances
-      run: |
-        cd backend
-        pip install -r requirements.txt
+      - name: Installer les dépendances
+        run: |
+          cd backend
+          pip install -r requirements.txt
 
-    - name: Vérification du style avec flake8
-      run: |
-        pip install flake8
-        flake8 backend/app.py
+      - name: Vérification du style avec flake8
+        run: |
+          pip install flake8
+          flake8 backend/app.py
 
-    - name: Lancer l'API et vérifier sa santé
-      run: |
-        python backend/app.py &
-        for i in {1..10}; do
-          echo "Attente du démarrage de l'API..."
-          sleep 2
-          if curl -s http://localhost:5000/health; then
-            echo "API en ligne"
-            exit 0
-          fi
-        done
-        echo "L'API ne répond pas après 20 secondes"
-        exit 1
-
-    - name: Connexion à Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-    - name: Construction et push de l'image Docker backend
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/databird-api:backend-latest ./backend
-        docker push ${{ secrets.DOCKER_USERNAME }}/databird-api:backend-latest
+      - name: Lancer l'API et vérifier sa santé
+        run: |
+          python backend/app.py &
+          for i in {1..10}; do
+            echo "Attente du démarrage de l'API..."
+            sleep 2
+            if curl -s http://localhost:5000/health; then
+              echo "API en ligne"
+              exit 0
+            fi
+          done
+          echo "L'API ne répond pas après 20 secondes"
+          exit 1
+      - name: Check secrets presence
+        run: |
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then echo "USERNAME MISSING"; fi
+          if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then echo "PASSWORD MISSING"; fi
+      - name: Connexion à Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Construction et push de l'image Docker backend
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/databird-api:backend-latest ./backend
+          docker push ${{ secrets.DOCKER_USERNAME }}/databird-api:backend-latest
