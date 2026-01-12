@@ -4,9 +4,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", # pour le dev local
-     "https://databird-api-frontend-latest.onrender.com" # pour la prod)
-])
+CORS(app, origins=["http://localhost:3000",
+                   "https://databird-api-frontend-latest.onrender.com"])
 
 
 db_config = {
